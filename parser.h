@@ -5,7 +5,8 @@
 typedef enum {
 	A_COMMAND,
 	C_COMMAND,
-	L_COMMAND
+	L_COMMAND,
+	NO_COMMAND
 } C_Type;
 void read_instruction(char *ins);
 C_Type command_type(char *ins);

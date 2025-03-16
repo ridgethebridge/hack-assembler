@@ -22,7 +22,6 @@ dest[i] = '\0';
 for(int d = 0; d < i; ++d) {
 	dest[d] = ins[d];
 }
-printf("%s dest\n",dest);
 return dest;
 }
 
@@ -46,7 +45,6 @@ comp[colon_loc-equals_loc] = '\0';
 for(int d = 0; d < colon_loc; ++d) {
 	comp[d] = ins[equals_loc+d+1];
 }
-printf("%s comp\n",comp);
 return comp;
 }
 
@@ -92,16 +90,17 @@ while((c = read_buf[i++]) != '\n') {
 	}
 	}
 	ins[ins_counter] = '\0';
-	printf("%s\n",ins);
 }
 
 // gets type of instruction
 C_Type command_type(char *ins) {
-	switch(ins[0]) {
+		switch(ins[0]) {
 		case '@':
 		return A_COMMAND;
 		case '(':
 		return L_COMMAND;
+		case '\0':
+		return NO_COMMAND;
 		default:
 		return C_COMMAND;
 	}
