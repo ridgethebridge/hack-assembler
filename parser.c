@@ -2,10 +2,13 @@
 #include<stdio.h>
 #include<stdlib.h>
 
+// stream for source file
 FILE *code;
+// buffer for reading lines
 char read_buf[256];
+// line number for error printing
 
-// returns null on no dest field
+// returns only dest field, all gets return null if field is not present
 char *get_dest(char *ins) {
 char *dest = NULL;
 int i = 0;
@@ -19,9 +22,11 @@ dest[i] = '\0';
 for(int d = 0; d < i; ++d) {
 	dest[d] = ins[d];
 }
+printf("%s dest\n",dest);
 return dest;
 }
 
+// returns only comp field
 char* get_comp(char *ins) {
 char *comp = NULL;
 int equals_loc = 0;
@@ -41,9 +46,11 @@ comp[colon_loc-equals_loc] = '\0';
 for(int d = 0; d < colon_loc; ++d) {
 	comp[d] = ins[equals_loc+d+1];
 }
+printf("%s comp\n",comp);
 return comp;
 }
 
+// parses jmp field, returns only jmp field
 char* get_jmp(char *ins) {
 char *jmp = NULL;
 int i = 0;
@@ -55,13 +62,14 @@ while(ins[i] != ';') {
 	}
 jmp = malloc(3*sizeof(char)+1);
 jmp[3] = '\0';
-for(int d = i+1; ins[d]; ++d) {
-	jmp[d] = ins[d];
+for(int d = 0; ins[i++]; ++d) {
+	jmp[d] = ins[i];
 }
 return jmp;
 }
 
 
+// reads line containing instruction, stores it in ins
 void read_instruction(char *ins) {
 char c;
 int i = 0;
@@ -87,6 +95,7 @@ while((c = read_buf[i++]) != '\n') {
 	printf("%s\n",ins);
 }
 
+// gets type of instruction
 C_Type command_type(char *ins) {
 	switch(ins[0]) {
 		case '@':
@@ -109,11 +118,13 @@ int close_source() {
 	fclose(code);
 	return 0;
 }
-int has_next() {
+
+// checks for more input
+bool has_next() {
 	char c;
 	if((c = fgetc(code))== EOF) {
-		return 0;
+		return false;
 	}
 	ungetc(c,code);
-	return 1;
+	return true;
 }
