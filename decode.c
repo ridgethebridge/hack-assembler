@@ -40,6 +40,9 @@ for(int i = 0; i < sizeof(comp_pairs)/sizeof(struct C_Pairs); ++i) {
 		return;
 		}
 	}
+	fprintf(stderr,"error in comp field, unknown operation, on line %d",line_num);
+	fprintf(stderr," in statement %s\n",ins);
+	exit(3);
 }
 
 void decode_dest(char *d_ins, char *ins) {

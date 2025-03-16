@@ -34,7 +34,6 @@ while(has_next()) {
 			continue;
 			
 		}
-		printf("%s one ins\n",d_ins);
 	fprintf(exe,"%s\n",d_ins);
 }
 
