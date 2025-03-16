@@ -23,14 +23,18 @@ while(has_next()) {
 	read_instruction(ins);
 	switch(command_type(ins)) {
 		case A_COMMAND:
-			decode_a(d_ins,ins);
+			decode_a(d_ins,ins+1);
 			break;
 		case C_COMMAND:
 			decode_c(d_ins,ins);
 			break;
-		default:
+		case L_COMMAND:
 			break;
+		case NO_COMMAND:
+			continue;
+			
 		}
+		printf("%s one ins\n",d_ins);
 	fprintf(exe,"%s\n",d_ins);
 }
 
