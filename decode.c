@@ -19,11 +19,11 @@ return true;
 void decode_a(char *d_ins, char *ins) {
 ++line_num;
 if(isdigit(*ins)) {
-	int value = atoi(ins+1);
+	int value = atoi(ins);
 	memset(d_ins,'0',16);
 	d_ins[16] = '\0';
 	int count = 15;
-	while(value >= 1) {
+	while(value >0) {
 	d_ins[count--] = '0' +value%2;
 	value/=2;
 		}
