@@ -1,5 +1,6 @@
 #include "decode.h"
 #include "parser.h"
+#include "constants.h"
 #include<ctype.h>
 #include<string.h>
 #include<stdlib.h>
@@ -7,8 +8,11 @@
 
 
 	
-int line_num = 0;
+ extern int line_num;
 bool are_equal(char *s1, char *s2) {
+	if(strlen(s1) != strlen(s2)) {
+		return false;
+	}
 while(*s1) {
 	if(*s1++ != *s2++) {
 		return false;
@@ -16,8 +20,46 @@ while(*s1) {
 	}
 return true;
 }
+
+int rank(char *field) {
+	int lp = 0;
+	int rp = sizeof(comp_pairs)/sizeof(struct C_Pairs)-1;
+	int mid;
+
+	while(lp <=rp) {
+		mid = (lp+rp)/2;
+		int cmp = strcmp(field,comp_pairs[mid].mnem);
+		if(cmp < 0) {
+			rp = mid-1;
+		}
+		else if(cmp > 0) {
+			lp = mid+1;
+		}
+		else { return mid;}
+	}
+	return mid;
+}
+
+int rank_jmp(char *field) {
+	int lp = 0;
+	int rp = sizeof(jmp_pairs)/sizeof(struct C_Pairs)-1;
+	int mid;
+
+	while(lp <=rp) {
+		mid = (lp+rp)/2;
+		int cmp = strcmp(field,jmp_pairs[mid].mnem);
+		if(cmp < 0) {
+			rp = mid-1;
+		}
+		else if(cmp > 0) {
+			lp = mid+1;
+		}
+		else { return mid;}
+	}
+	return mid;
+}
+
 void decode_a(char *d_ins, char *ins) {
-++line_num;
 if(isdigit(*ins)) {
 	int value = atoi(ins);
 	memset(d_ins,'0',16);
@@ -34,15 +76,22 @@ else
 	}
 }
 void decode_comp(char *d_ins, char *ins) {
-for(int i = 0; i < sizeof(comp_pairs)/sizeof(struct C_Pairs); ++i) {
+/*for(int i = 0; i < sizeof(comp_pairs)/sizeof(struct C_Pairs); ++i) {
 	if(are_equal(ins,comp_pairs[i].mnem)) {
 		memcpy(d_ins,comp_pairs[i].opcode,7);
 		return;
 		}
 	}
+	*/
+	int rnk = rank(ins);
+	if(are_equal(ins,comp_pairs[rnk].mnem)) {
+	memcpy(d_ins,comp_pairs[rnk].opcode,7);
+	}
+	else {
 	fprintf(stderr,"error in comp field, unknown operation, on line %d",line_num);
 	fprintf(stderr," in statement %s\n",ins);
 	exit(3);
+	}
 }
 
 void decode_dest(char *d_ins, char *ins) {
@@ -76,21 +125,29 @@ void decode_jmp(char *d_ins,char *ins) {
 	memset(d_ins,'0',3);
 		return;
 	}
+	/*
 	for(int i = 0; i < sizeof(jmp_pairs)/sizeof(struct C_Pairs);++i) {
 		if(are_equal(ins,jmp_pairs[i].mnem)) {
 			strcpy(d_ins,jmp_pairs[i].opcode);
 			return;
 		}
 	}
+	*/
+	int rnk = rank_jmp(ins);
+	if(are_equal(ins,jmp_pairs[rnk].mnem)) {
+		strcpy(d_ins,jmp_pairs[rnk].opcode);
+	}
+	else {
+
 		fprintf(stderr,"error in jump field, unknown directive on line %d",line_num);
 		fprintf(stderr," in statement %s\n",ins);
 		exit(3);
+	}
 
 }
 
 void decode_c(char *d_ins,char *ins) {
 strcpy(d_ins,"111");
-++line_num;
 d_ins+=3;
 char *dest = get_dest(ins);
 char *jmp = get_jmp(ins);
