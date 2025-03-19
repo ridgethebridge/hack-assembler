@@ -6,6 +6,7 @@
 FILE *code;
 // buffer for reading lines
 char read_buf[256];
+int line_num = 0;
 // line number for error printing
 
 // returns only dest field, all gets return null if field is not present
@@ -90,6 +91,7 @@ while((c = read_buf[i++]) != '\n') {
 	}
 	}
 	ins[ins_counter] = '\0';
+	++line_num;
 }
 
 // gets type of instruction
