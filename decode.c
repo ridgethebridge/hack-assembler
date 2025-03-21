@@ -1,6 +1,7 @@
 #include "decode.h"
 #include "parser.h"
 #include "constants.h"
+#include "hashtable.h"
 #include<ctype.h>
 #include<string.h>
 #include<stdlib.h>
@@ -9,6 +10,7 @@
 
 	
  extern int line_num;
+ int var_address = 16;
 bool are_equal(char *s1, char *s2) {
 	if(strlen(s1) != strlen(s2)) {
 		return false;
@@ -21,6 +23,7 @@ while(*s1) {
 return true;
 }
 
+// gets index of field in array containing valid computation fields
 int rank(char *field) {
 	int lp = 0;
 	int rp = sizeof(comp_pairs)/sizeof(struct C_Pairs)-1;
@@ -40,6 +43,7 @@ int rank(char *field) {
 	return mid;
 }
 
+// gets index of field in array containing valid jumps
 int rank_jmp(char *field) {
 	int lp = 0;
 	int rp = sizeof(jmp_pairs)/sizeof(struct C_Pairs)-1;
@@ -59,30 +63,33 @@ int rank_jmp(char *field) {
 	return mid;
 }
 
+// expects either a number or identifier, no @ included
 void decode_a(char *d_ins, char *ins) {
+int count = 14;
+d_ins[15] = '\0';
+memset(d_ins,'0',15);
 if(isdigit(*ins)) {
 	int value = atoi(ins);
-	memset(d_ins,'0',16);
-	d_ins[16] = '\0';
-	int count = 15;
 	while(value >0) {
 	d_ins[count--] = '0' +value%2;
 	value/=2;
 		}
 	}
-else 
+else if(isalpha(*ins) || *ins == '_')
 	{
-
+	int loc = get(ins);
+	if(loc == -1) {
+	loc = var_address++;
+	put(ins,loc);
 	}
-}
-void decode_comp(char *d_ins, char *ins) {
-/*for(int i = 0; i < sizeof(comp_pairs)/sizeof(struct C_Pairs); ++i) {
-	if(are_equal(ins,comp_pairs[i].mnem)) {
-		memcpy(d_ins,comp_pairs[i].opcode,7);
-		return;
+	while(loc >0) {
+	d_ins[count--] = '0' +loc%2;
+	loc/=2;
 		}
-	}
-	*/
+}
+}
+
+void decode_comp(char *d_ins, char *ins) {
 	int rnk = rank(ins);
 	if(are_equal(ins,comp_pairs[rnk].mnem)) {
 	memcpy(d_ins,comp_pairs[rnk].opcode,7);
@@ -125,14 +132,6 @@ void decode_jmp(char *d_ins,char *ins) {
 	memset(d_ins,'0',3);
 		return;
 	}
-	/*
-	for(int i = 0; i < sizeof(jmp_pairs)/sizeof(struct C_Pairs);++i) {
-		if(are_equal(ins,jmp_pairs[i].mnem)) {
-			strcpy(d_ins,jmp_pairs[i].opcode);
-			return;
-		}
-	}
-	*/
 	int rnk = rank_jmp(ins);
 	if(are_equal(ins,jmp_pairs[rnk].mnem)) {
 		strcpy(d_ins,jmp_pairs[rnk].opcode);
