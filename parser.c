@@ -1,15 +1,20 @@
+/* TODO
+-the read_instruction function can read past designated array
+*/
+
 #include "parser.h"
+#include "hashtable.h"
 #include<stdio.h>
 #include<stdlib.h>
+#include<string.h>
 
 // stream for source file
 FILE *code;
 // buffer for reading lines
 char read_buf[256];
-int line_num = 0;
 // line number for error printing
+int line_num = 0;
 
-// returns only dest field, all gets return null if field is not present
 char *get_dest(char *ins) {
 char *dest = NULL;
 int i = 0;
@@ -29,42 +34,70 @@ return dest;
 // returns only comp field
 char* get_comp(char *ins) {
 char *comp = NULL;
-int equals_loc = 0;
-while(ins[equals_loc] != '=') {
-	if(ins[equals_loc++] == '\0') {
-		equals_loc = 0;
+int comp_start = 0;
+while(ins[comp_start] != '=') {
+	if(ins[comp_start++] == '\0') {
+		comp_start = -1;
 		break;
 		}
 	}
-int colon_loc = 0;
+++comp_start;
+int colon_loc = comp_start+1;
 while(ins[colon_loc] != ';' && ins[colon_loc] != '\0')  {
 	++colon_loc;
 }
+int comp_length = colon_loc - comp_start;
 	
-comp = malloc((colon_loc-equals_loc)*sizeof(char)+1);
-comp[colon_loc-equals_loc] = '\0';
-for(int d = 0; d < colon_loc; ++d) {
-	comp[d] = ins[equals_loc+d+1];
+comp = malloc((comp_length)*sizeof(char)+1);
+comp[comp_length] = '\0';
+for(int d = 0; d < comp_length; ++d) {
+	comp[d] = ins[comp_start+d];
 }
 return comp;
 }
 
-// parses jmp field, returns only jmp field
+// returns only jmp field
 char* get_jmp(char *ins) {
-char *jmp = NULL;
-int i = 0;
-while(ins[i] != ';') {
-	if(ins[i++] == '\0') {
-		return jmp;
-		break;
+	char *jmp = NULL;
+	int i = 0;
+	while(ins[i] != ';') 
+	{
+		if(ins[i++] == '\0') {
+			return jmp;
 		}
 	}
-jmp = malloc(3*sizeof(char)+1);
-jmp[3] = '\0';
-for(int d = 0; ins[i++]; ++d) {
-	jmp[d] = ins[i];
+	jmp = malloc(3*sizeof(char)+1);
+	jmp[3] = '\0';
+	for(int d = 0; ins[i++]; ++d) {
+		jmp[d] = ins[i];
+		}	
+	return jmp;
 }
-return jmp;
+
+void fill_table() {
+char ins[128];
+int rom_loc = 0;
+while(has_next()) {
+read_instruction(ins);
+switch(command_type(ins)) {
+case A_COMMAND:
+case C_COMMAND:
+++rom_loc;
+break;
+case L_COMMAND:
+int par_loc = strlen(ins)-1;
+if(ins[par_loc] != ')') {
+	fprintf(stderr,"expected ) for label in line %d in statement %s\n",line_num,ins);
+	exit(1);
+}
+ins[strlen(ins)-1] = '\0';
+put(ins+1,rom_loc);
+break;
+}
+
+}
+rewind(code);
+line_num = 0;
 }
 
 
@@ -101,6 +134,7 @@ C_Type command_type(char *ins) {
 		return A_COMMAND;
 		case '(':
 		return L_COMMAND;
+		case '\n':
 		case '\0':
 		return NO_COMMAND;
 		default:
@@ -108,11 +142,14 @@ C_Type command_type(char *ins) {
 	}
 }
 
+// 1 on failure, 0 on success
 int open_source(char *file) {
 	code = fopen(file,"r");
 	if(!code) {
 		return 1;
 	}
+	create_table(TABLE_SIZE);
+	fill_table();
 	return 0;
 }
 int close_source() {
@@ -122,10 +159,9 @@ int close_source() {
 
 // checks for more input
 bool has_next() {
-	char c;
-	if((c = fgetc(code))== EOF) {
-		return false;
-	}
-	ungetc(c,code);
-	return true;
+char c = getc(code);
+if(c == EOF)
+	return false;
+ungetc(c,code);
+return true;
 }

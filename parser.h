@@ -15,4 +15,6 @@ int close_source();
 char* get_dest(char *ins);
 char* get_comp(char *ins);
 char *get_jmp(char *ins);
+void fill_table();
+
 #endif
