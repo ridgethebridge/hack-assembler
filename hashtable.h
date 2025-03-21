@@ -1,6 +1,7 @@
 
 #ifndef TABLE_H
 #define TABLE_H
+#define TABLE_SIZE 23
 
 typedef struct Pair Pair;
 
@@ -18,6 +19,6 @@ int size;
 int hash( char* key);
 void put( char* key, int value);
 int get(char* key);
-Table *createTable(int size);
-Pair *createPair(char *key, int value);
+void create_table(int size);
+Pair *create_pair(char *key, int value);
 #endif

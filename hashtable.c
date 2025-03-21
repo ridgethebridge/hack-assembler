@@ -2,7 +2,6 @@
 #include "hashtable.h"
 #include<string.h>
 #include<stdlib.h>
-#define TABLE_SIZE 23
 
 Table *hTable;
 
@@ -24,12 +23,12 @@ return;
 }
 pair = pair->next;
 }
-Pair *newPair  = createPair(key,value);
+Pair *newPair  = create_pair(key,value);
 newPair->next = *(hTable->table+index);
 (hTable->table)[index] = newPair;
 }
 
-Pair *createPair(char *key, int value) {
+Pair *create_pair(char *key, int value) {
 	Pair *pair = malloc(sizeof(Pair));
 	pair->key = calloc(25,sizeof(char));
 	strcpy(pair->key,key);
@@ -50,26 +49,9 @@ if(strcmp(key,pair->key) == 0) {
 	return -1;
 	}
 
-Table *createTable(int size) {
-Table *hTable;
+void create_table(int size) {
 hTable = malloc(sizeof(Table));
 hTable->size = size;
 hTable->table = calloc(size,sizeof(Pair*)); //sets pointers to actual pairs to null
-return hTable;
 }
 
-int main() {
-hTable = createTable(TABLE_SIZE);
-put("dire",25);
-printf("%d %s\n", get("dire"),"dire");
-put("dire",69);
-printf("%d %s\n", get("dire"),"dire");
-put("ride",21);
-printf("%d %s\n", get("ride"),"ride");
-printf("%d %s\n", get("dire"),"dire");
-put("ride",99);
-printf("%d %s\n", get("ride"),"ride");
-printf("%d %s\n", get("dire"),"dire");
-
-return 0;
-}
