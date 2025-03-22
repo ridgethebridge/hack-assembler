@@ -8,6 +8,6 @@ To use hasm run
 and it should produce a file called file.hack, with file being a placeholder for any name.
 The hack file can then be run on the cpu emulator which can be downloaded from the Nand2Tetris website
 
-**Things I might add **
+**Things I might add**
 * indexing for the M register so A and C instructions can be combined
 * other Macro support
