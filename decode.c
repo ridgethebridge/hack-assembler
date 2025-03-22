@@ -65,9 +65,9 @@ int rank_jmp(char *field) {
 
 // expects either a number or identifier, no @ included
 void decode_a(char *d_ins, char *ins) {
-int count = 14;
-d_ins[15] = '\0';
-memset(d_ins,'0',15);
+int count = 15;
+d_ins[16] = '\0';
+memset(d_ins,'0',16);
 if(isdigit(*ins)) {
 	int value = atoi(ins);
 	while(value >0) {
