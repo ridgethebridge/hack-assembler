@@ -1,19 +1,7 @@
-/* TODO
--the read_instruction function can read past designated array
-*/
-
 #include "parser.h"
-#include "hashtable.h"
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
-
-// stream for source file
-FILE *code;
-// buffer for reading lines
-char read_buf[256];
-// line number for error printing
-int line_num = 0;
 
 char *get_dest(char *ins) {
 char *dest = NULL;
@@ -74,11 +62,30 @@ char* get_jmp(char *ins) {
 	return jmp;
 }
 
-void fill_table() {
+// maybe fill table when creating parser, have to pass through file one less
+void fill_table(Parser * parser,Table* table) {
 char ins[128];
 int rom_loc = 0;
-while(has_next()) {
-read_instruction(ins);
+put("R0",0,table);
+put("R1",1,table);
+put("R2",2,table);
+put("R3",3,table);
+put("R4",4,table);
+put("R5",5,table);
+put("R6",6,table);
+put("R7",7,table);
+put("R8",8,table);
+put("R9",9,table);
+put("R10",10,table);
+put("R11",11,table);
+put("R12",12,table);
+put("R13",13,table);
+put("R14",14,table);
+put("R15",15,table);
+put("SCREEN",16384,table);
+put("KBD",24576,table);
+while(has_next(parser)) {
+read_line(ins,parser);
 switch(command_type(ins)) {
 case A_COMMAND:
 case C_COMMAND:
@@ -87,34 +94,34 @@ break;
 case L_COMMAND:
 int par_loc = strlen(ins)-1;
 if(ins[par_loc] != ')') {
-	fprintf(stderr,"expected ) for label in line %d in statement %s\n",line_num,ins);
+	fprintf(stderr,"expected ) for label in line %d in statement %s\n",parser->line_num,ins);
 	exit(1);
 }
 ins[strlen(ins)-1] = '\0';
-put(ins+1,rom_loc);
+put(ins+1,rom_loc,table);
 break;
 }
 
 }
-rewind(code);
-line_num = 0;
+reset_parser(parser);
 }
 
 
 // reads line containing instruction, stores it in ins
-void read_instruction(char *ins) {
+void read_line(char *line,Parser* parser) {
+#define FINISH(p) while(p->code[p->cursor++] != '\n');
+	
 char c;
-int i = 0;
-int ins_counter = 0;
 int slash_prev = 0;
-fgets(read_buf,255,code);
-while((c = read_buf[i++]) != '\n') {
+int letter_count = 0;
+while((c = parser->code[parser->cursor++]) != '\n') {
 	if(c != ' ' ) {
-	ins[ins_counter++] = c;
+	line[letter_count++] = c;
 	}
 	if(c == '/') {
 		if(slash_prev) {
-			ins[ins_counter-2] = '\0';//stops here
+			line[letter_count-2] = '\0';//stops here
+			FINISH(parser)
 			break;
 		}
 		slash_prev = 1;
@@ -123,8 +130,8 @@ while((c = read_buf[i++]) != '\n') {
 		slash_prev = 0;
 	}
 	}
-	ins[ins_counter] = '\0';
-	++line_num;
+	line[letter_count] = '\0';
+	parser->line_num++;
 }
 
 // gets type of instruction
@@ -142,44 +149,46 @@ C_Type command_type(char *ins) {
 	}
 }
 
-// 1 on failure, 0 on success
-int open_source(char *file) {
-	code = fopen(file,"r");
+Parser* create_parser(char *file) {
+	#define INIT_SIZE 1024
+	FILE* code = fopen(file,"r");
 	if(!code) {
-		return 1;
+		return NULL;
 	}
-	create_table(TABLE_SIZE);
-	put("SCREEN",16384);
-	put("KBD",24576);
-	put("R0",0);
-	put("R1",1);
-	put("R2",2);
-	put("R3",3);
-	put("R4",4);
-	put("R5",5);
-	put("R6",6);
-	put("R7",7);
-	put("R8",8);
-	put("R9",9);
-	put("R10",10);
-	put("R11",11);
-	put("R12",12);
-	put("R13",13);
-	put("R14",14);
-	put("R15",15);
-	fill_table();
-	return 0;
-}
-int close_source() {
+	size_t size = INIT_SIZE;
+	char *source=malloc(sizeof(char)*size);
+	size_t num_read = 0;
+	char *line;
+	// loads entire file into memory
+	while((line=fgets(source+num_read,256,code))) {
+		num_read+= strlen(line);
+		if(size-num_read < 256) {
+			size*=2;
+			source = realloc(source,size);
+		}
+	}
 	fclose(code);
-	return 0;
+	//shrinks down source size
+	source = realloc(source,size);
+	// only do this to initlize const field
+	Parser *parser = malloc(sizeof(Parser));
+	Parser p = {.code = source,.length=strlen(source),.cursor=0,.line_num=0};
+	memcpy(parser,&p,sizeof(Parser));
+
+	return parser;
 }
 
 // checks for more input
-bool has_next() {
-char c = getc(code);
-if(c == EOF)
-	return false;
-ungetc(c,code);
-return true;
+bool has_next(Parser* parser) {
+	return parser->cursor < parser->length;
+}
+
+void reset_parser(Parser *parser) {
+	parser->cursor = 0;
+	parser->line_num = 0;
+}
+//frees parser and its contents, unusable unless set a new value
+void destroy_parser(Parser *parser) {
+	free((void*)parser->code);
+	free(parser);
 }
