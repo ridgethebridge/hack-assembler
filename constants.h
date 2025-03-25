@@ -31,6 +31,8 @@
 #define RM_SUB "M-D"
 #define M_AND "D&M"
 #define M_OR "D|M"
+#define R_ADD "A+D"
+#define RM_ADD "M+D"
 
 // jump codes
 #define JMP "JMP"
@@ -51,10 +53,10 @@ char *opcode;
 // list of acceptable comp mnemonics and their binary values
 static struct C_Pairs comp_pairs[] = {{NOT_A,"0110001"},{NOT_D,"0001101"},{NOT_M,"1110001"},{NEG_ONE,"0111010"},
 					{NEG_A,"0110011"},{NEG_D,"0001111"},{NEG_M,"1110011"},{ZERO,"0101010"},
-					{ONE,"0111111"},{A,"0110000"},{INC_A,"0110111"},{DEC_A,"0110010"},
+					{ONE,"0111111"},{A,"0110000"},{INC_A,"0110111"},{R_ADD,"0000010"},{DEC_A,"0110010"},
 					{R_SUB,"0000111"},{D,"0001100"},{AND,"0000000"},{M_AND,"1000000"},{INC_D,"0011111"},
 		   			{ADD,"0000010"},{M_ADD,"1000010"},{DEC_D,"0001110"},{SUB,"0010011"},{M_SUB,"1010011"},
-		   			{OR,"0010101"},{M_OR,"1010101"},{M,"1110000"},{INC_M,"1110111"},{DEC_M,"1110010"},
+		   			{OR,"0010101"},{M_OR,"1010101"},{M,"1110000"},{INC_M,"1110111"},{RM_ADD,"1000010"},{DEC_M,"1110010"},
 		   			{RM_SUB,"1000111"}};
 
 // list of acceptable jump mnemonics and their binary values
